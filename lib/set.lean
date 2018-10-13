@@ -47,7 +47,22 @@ end
  -/
 theorem mem.complement {A : set U} {x : U} (h₁ : x ∉ A) : x ∈ -A := h₁
 theorem mem.complement_reverse {A: set U} {x: U} (h₁ : x ∈ -A) : x ∉ A := h₁
+theorem mem.complement_not {A : set U} {x : U} (h₁ : x ∈ -A) : x ∉ A := mem.complement_reverse h₁
+theorem mem.complement_reverse_not {A: set U} {x: U} (h₁ : x ∈ A) : x ∉ -A :=
+begin
+  by_contradiction hcontra,
+  contradiction,
+end
+theorem mem.complement_neg {A : set U} {x : U} (h₁ : x ∉ -A) : x ∈ A :=
+begin
+  by_contradiction hcontra,
+  show false, from h₁ (mem.complement hcontra)
+end
 
+
+/-
+ - Set Intersection
+ -/
 theorem intersect.intro {A B : set U} : ∀ x, x ∈ A → x ∈ B → x ∈ A ∩ B :=
 begin
   assume x,
@@ -61,11 +76,10 @@ end
 /-
  - Generally useful theorems
  -/
-
-theorem subset.refl (A : set U) : A ⊆ A :=
+theorem subset.refl {A : set U} : A ⊆ A :=
   by {assume h, intro, assumption}
 
-theorem subset.trans (A B C : set U) : A ⊆ B → B ⊆ C → A ⊆ C :=
+theorem subset.trans {A B C : set U} : A ⊆ B → B ⊆ C → A ⊆ C :=
 begin
   intros h1 h2,
   assume x,
@@ -73,7 +87,7 @@ begin
   exact h2 (h1 ha)
 end
 
-theorem subset.ext (A B: set U) : (∀ x, x ∈ A ↔ x ∈ B) → A = B :=
+theorem subset.ext {A B: set U} : (∀ x, x ∈ A ↔ x ∈ B) → A = B :=
 begin
   assume hforall,
   apply funext,
@@ -81,7 +95,7 @@ begin
   apply propext (hforall x),
 end
 
-theorem subset.antisymm (A B : set U) (h₁ : A ⊆ B) (h₂ : B ⊆ A) : A = B :=
+theorem subset.antisymm {A B : set U} (h₁ : A ⊆ B) (h₂ : B ⊆ A) : A = B :=
 begin
   apply subset.ext,
   assume x,
@@ -90,7 +104,13 @@ begin
   { intro hb, exact (h₂ hb) }
 end
 
--- Still working on this theorem...
+theorem complement.double {A : set U} : ∀ x, x ∈ A → x ∈ - -A :=
+begin
+  intros x h,
+  apply mem.complement,
+  exact (mem.complement_reverse_not h)
+end
+
 theorem demorgan_union {A B : set U} : -(A ∩ B) = -A ∪ -B :=
 begin
   apply subset.antisymm,
@@ -110,15 +130,29 @@ begin
       assumption,
     },
     {
-      -- proof of suffices condition: x ∉ A ∨ x ∉ b
-      -- pretty huge gap in this proof...
-      sorry
+      -- proof of suffices condition: x ∉ A ∨ x ∉ B
+      apply logic.or_not,
+      by_contradiction hcontra,
+      cases hcontra with ha hb,
+      show false, from hnot (intersect.intro x ha hb),
     }
   },
   {
-    -- pretty sure you can't do this with non-classical logic
-    sorry
-  }
+    intros x h,
+    cases h,
+    {
+      apply mem.complement,
+      by_contradiction hcontra,
+      cases hcontra with ha hb,
+      show false, from (mem.complement_not h) ha
+    },
+    {
+      apply mem.complement,
+      by_contradiction hcontra,
+      cases hcontra with ha hb,
+      show false, from (mem.complement_not h) hb
+    }
+  },
 end
 
 end set
