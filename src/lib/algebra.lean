@@ -12,8 +12,6 @@ section semigroup
   theorem mul_left_inj [left_cancel_semigroup α] (a : α) {b c : α} : a * b = a * c ↔ b = c :=
     ⟨mul_left_cancel, congr_arg _⟩
 
-  #check @mul_left_inj
-  
 end semigroup
 
 /-
